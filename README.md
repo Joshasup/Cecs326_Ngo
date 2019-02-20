@@ -8,9 +8,11 @@ Sample text
 
 Christopher Greer - cagbrothers@gmail.com
 
-Josh Song
+Josh Song - hasupsong@gmail.com
 
-Others
+Kelly - dangkelly4@gmail.com
+
+Oscar - oscarmgepiga@yahoo.com
 
 March 3, 2019
 
