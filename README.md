@@ -10,6 +10,8 @@ Christopher Greer - cagbrothers@gmail.com
 
 Josh Song
 
+Kelly Dang - dangkelly4@gmail.com
+
 Others
 
 March 3, 2019
