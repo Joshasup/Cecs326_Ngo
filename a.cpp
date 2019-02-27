@@ -12,6 +12,7 @@ using namespace std;
 
 int main(){
 
+    int qid = msgget(ftok(".",'u'),0);
     int acknowledge = 0;
     struct buf {
         long mtype;
@@ -27,13 +28,15 @@ int main(){
 
         int randomNum = rand();
         if (randomNum < 100){
-            //delete
+            break;
         }
 
         else if ((acknowledge = 1) && ((randomNum%msg.mtype)== 0))
         {
-            //send
-            
+            msg.mtype = 997;
+            strcpy(msg.greeting, "ProbeA message");
+            msgsnd(qid,(struct msgbuf *)&msg,size, 0);
+
         }
     }
 }
