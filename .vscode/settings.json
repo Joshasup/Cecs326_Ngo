@@ -1,4 +1,4 @@
 {
-    "C_Cpp.default.configurationProvider": "vector-of-bool.cmake-tools",
-    "cmake.buildDirectory": "${workspaceRoot}/cmake-build-debug"
+    "cmake.buildDirectory": "${workspaceRoot}/cmake-build-debug",
+    "cmake.configureOnOpen": true
 }
