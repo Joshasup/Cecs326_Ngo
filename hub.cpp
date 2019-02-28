@@ -4,8 +4,6 @@
 
 #include "define.h"
 #include <iostream>
-#include <memory>
-#include <string_view>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
@@ -29,7 +27,7 @@ void b_route(int qid) {
         // The message was able to be read
         if (status != -1) {
             std::cout << "Probe [B]: "
-                      << std::string_view{msg.message.get(), msg.size()}
+                      << std::string_view{msg.message.get(), message_size}
                       << "\n";
             ++message_count;
         }

@@ -4,18 +4,14 @@
 
 #include "define.h"
 #include <cstring>
-#include <memory>
 #include <random>
 #include <sys/ipc.h>
 #include <sys/msg.h>
-#include <sys/types.h>
 
 int promised_random() {
-    std::minstd_rand0 rng{std::random_device{}()};
-    std::uniform_int_distribution<int> dist{};
     int r;
     do {
-        r = dist(rng);
+        r = rand();
     } while (!valid_reading(r, beta));
     return r;
 }
@@ -32,6 +28,7 @@ void route(int qid) {
 }
 
 int main() {
+    srand(std::random_device{}());
     int qid = msgget(ftok(".", 'u'), 0);
     route(qid);
 }

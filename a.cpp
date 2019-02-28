@@ -1,42 +1,32 @@
-#include <sys/types.h>
+#include "define.h"
+#include <cstring>
+#include <random>
 #include <sys/ipc.h>
 #include <sys/msg.h>
-#include <cstring>
-#include <iostream>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <cstdlib>
-#include <random>
 
 using namespace std;
 
-int main(){
-
-    int qid = msgget(ftok(".",'u'),0);
+int main() {
+    srand(random_device{}());
+    int qid = msgget(ftok(".", 'u'), 0);
     int acknowledge = 0;
     struct buf {
         long mtype;
         char message[50];
+    };
 
-    }
-
-    buf msg;
+    buf msg{};
     int size = sizeof(msg) - sizeof(long);
-    msg.mtype = 997;
+    msg.mtype = alpha;
 
-    while (true){
-
+    while (true) {
         int randomNum = rand();
-        if (randomNum < 100){
+        if (randomNum < 100) {
             break;
-        }
-
-        else if ((acknowledge = 1) && ((randomNum%msg.mtype)== 0))
-        {
+        } else if (acknowledge == 1 && valid_reading(randomNum, msg.mtype)) {
             msg.mtype = 997;
-            strcpy(msg.greeting, "ProbeA message");
-            msgsnd(qid,(struct msgbuf *)&msg,size, 0);
-
+            strcpy(msg.message, "ProbeA message");
+            msgsnd(qid, (struct msgbuf *)&msg, size, 0);
         }
     }
 }
