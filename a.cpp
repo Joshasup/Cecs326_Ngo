@@ -5,6 +5,8 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
+constexpr auto alpha = 997;
+
 using namespace std;
 
 int main() {
@@ -12,7 +14,7 @@ int main() {
     int qid = msgget(ftok(".", 'u'), 0);
     int acknowledge = 0;
 
-    message_buffer msg{alpha};
+    message_buffer msg{shared_mtype};
 
     while (true) {
         // TODO: Receive acknowledgement from DataHub

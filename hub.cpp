@@ -33,7 +33,7 @@ pid_t getpid() {
 
 void b_route(int qid, pid_t pid) {
     // TODO: Ask professor if message count and printing is shared across probes.
-    message_buffer msg{beta};
+    message_buffer msg{shared_mtype};
     std::cout << "Waiting for Probe B...\n";
     int message_count = 0;
     while (message_count < 10'000) {

@@ -10,6 +10,8 @@
 #include <sys/msg.h>
 #include <unistd.h>
 
+constexpr auto beta = 257;
+
 int promised_random() {
     int r;
     do {
@@ -19,7 +21,7 @@ int promised_random() {
 }
 
 void route(int qid) {
-    message_buffer msg{beta};
+    message_buffer msg{shared_mtype};
 
     std::cout << "Broadcasting from " << getpid() << '\n';
 
