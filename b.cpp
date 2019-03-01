@@ -4,9 +4,11 @@
 
 #include "define.h"
 #include <cstring>
+#include <iostream>
 #include <random>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <unistd.h>
 
 int promised_random() {
     int r;
@@ -17,13 +19,15 @@ int promised_random() {
 }
 
 void route(int qid) {
-    message_buffer msg{beta, std::make_unique<char[]>(max_size)};
-    while (true) {
-        // Copy the formatted int into the message queue
-        int random = promised_random();
-        snprintf(msg.message.get(), max_size, "%i", random);
+    message_buffer msg{beta};
 
-        msgsnd(qid, &msg, message_size, 0);
+    std::cout << "Broadcasting from " << getpid() << '\n';
+
+    // Copy the formatted int into the message queue
+    while (true) {
+        int random = promised_random();
+        snprintf(msg.message, sizeof(msg.message), "%i", random);
+        msgsnd(qid, &msg, msg_size, 0);
     }
 }
 

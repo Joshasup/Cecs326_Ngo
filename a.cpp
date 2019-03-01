@@ -1,5 +1,6 @@
 #include "define.h"
 #include <cstring>
+#include <iostream>
 #include <random>
 #include <sys/ipc.h>
 #include <sys/msg.h>
@@ -10,23 +11,19 @@ int main() {
     srand(random_device{}());
     int qid = msgget(ftok(".", 'u'), 0);
     int acknowledge = 0;
-    struct buf {
-        long mtype;
-        char message[50];
-    };
 
-    buf msg{};
-    int size = sizeof(msg) - sizeof(long);
-    msg.mtype = alpha;
+    message_buffer msg{alpha};
 
     while (true) {
+        // TODO: Receive acknowledgement from DataHub
         int randomNum = rand();
         if (randomNum < 100) {
+            std::cout << "Generated a number less than 100. Exiting.";
             break;
-        } else if (acknowledge == 1 && valid_reading(randomNum, msg.mtype)) {
-            msg.mtype = 997;
-            strcpy(msg.message, "ProbeA message");
-            msgsnd(qid, (struct msgbuf *)&msg, size, 0);
+        } else if (acknowledge == 1 &&
+                   valid_reading(randomNum, msg.message_type)) {
+            strncpy(msg.message, "ProbeA message", sizeof(msg.message));
+            msgsnd(qid, &msg, msg_size, 0);
         }
     }
 }
