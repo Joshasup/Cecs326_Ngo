@@ -1,42 +1,29 @@
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
+#include "define.h"
 #include <cstring>
 #include <iostream>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <cstdlib>
 #include <random>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 
 using namespace std;
 
-int main(){
-
-    int qid = msgget(ftok(".",'u'),0);
+int main() {
+    srand(random_device{}());
+    int qid = msgget(ftok(".", 'u'), 0);
     int acknowledge = 0;
-    struct buf {
-        long mtype;
-        char message[50];
 
-    }
+    message_buffer msg{alpha};
 
-    buf msg;
-    int size = sizeof(msg) - sizeof(long);
-    msg.mtype = 997;
-
-    while (true){
-
+    while (true) {
+        // TODO: Receive acknowledgement from DataHub
         int randomNum = rand();
-        if (randomNum < 100){
+        if (randomNum < 100) {
+            std::cout << "Generated a number less than 100. Exiting.";
             break;
-        }
-
-        else if ((acknowledge = 1) && ((randomNum%msg.mtype)== 0))
-        {
-            msg.mtype = 997;
-            strcpy(msg.greeting, "ProbeA message");
-            msgsnd(qid,(struct msgbuf *)&msg,size, 0);
-
+        } else if (acknowledge == 1 &&
+                   valid_reading(randomNum, msg.message_type)) {
+            strncpy(msg.message, "ProbeA message", sizeof(msg.message));
+            msgsnd(qid, &msg, msg_size, 0);
         }
     }
 }
