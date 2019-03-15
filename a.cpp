@@ -10,7 +10,7 @@ using namespace std;
 int main() {
     srand(random_device{}());
     int qid = msgget(ftok(".", 'u'), 0);
-    int acknowledge = 0;
+
 
     message_buffer msg{alpha};
 
@@ -20,10 +20,11 @@ int main() {
         if (randomNum < 100) {
             std::cout << "Generated a number less than 100. Exiting.";
             break;
-        } else if (acknowledge == 1 &&
-                   valid_reading(randomNum, msg.message_type)) {
-            strncpy(msg.message, "ProbeA message", sizeof(msg.message));
+        } else if (valid_reading(randomNum, msg.message_type)) {
+            
             msgsnd(qid, &msg, msg_size, 0);
+            msgrcv(qid,&msg, msg_size, 2, 0);
+            strncpy(msg.message, "ProbeA message", sizeof(msg.message));
         }
     }
 }
