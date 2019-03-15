@@ -31,8 +31,7 @@ pid_t getpid() {
     return i;
 }
 
-void b_route(int qid, pid_t pid) {
-    // TODO: Ask professor if message count and printing is shared across probes.
+void route(int qid, pid_t pid) {
     message_buffer msg{shared_mtype};
     std::cout << "Waiting for Probe B...\n";
     int message_count = 0;
@@ -60,7 +59,5 @@ int main() {
     std::cout << "Enter the PID of Probe B: ";
     pid_t pid = getpid();
 
-    // a_route(q.qid);
-    b_route(q.qid, pid);
-    // c_route(q.qid);
+    route(q.qid, pid);
 }

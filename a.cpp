@@ -18,12 +18,12 @@ int main() {
 
     while (true) {
         // TODO: Receive acknowledgement from DataHub
-        int randomNum = rand();
+        const int randomNum = rand();
         if (randomNum < 100) {
             std::cout << "Generated a number less than 100. Exiting.";
             break;
         } else if (acknowledge == 1 &&
-                   valid_reading(randomNum, msg.message_type)) {
+                   valid_reading(randomNum, alpha)) {
             strncpy(msg.message, "ProbeA message", sizeof(msg.message));
             msgsnd(qid, &msg, msg_size, 0);
         }

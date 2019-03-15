@@ -5,6 +5,7 @@
 #include "define.h"
 #include <cstring>
 #include <iostream>
+#include <optional>
 #include <random>
 #include <sys/ipc.h>
 #include <sys/msg.h>
@@ -12,12 +13,11 @@
 
 constexpr auto beta = 257;
 
-int promised_random() {
-    int r;
-    do {
-        r = rand();
-    } while (!valid_reading(r, beta));
-    return r;
+std::optional<int> promised_random() {
+    const int r = rand();
+    if (valid_reading(r, beta))
+        return r;
+    return {};
 }
 
 void route(int qid) {
@@ -27,9 +27,11 @@ void route(int qid) {
 
     // Copy the formatted int into the message queue
     while (true) {
-        int random = promised_random();
-        snprintf(msg.message, sizeof(msg.message), "%i", random);
-        msgsnd(qid, &msg, msg_size, 0);
+        const auto random = promised_random();
+        if (random) {
+            snprintf(msg.message, sizeof(msg.message), "%i", random.value());
+            msgsnd(qid, &msg, msg_size, 0);
+        }
     }
 }
 

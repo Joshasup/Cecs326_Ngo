@@ -7,5 +7,5 @@ include_directories(include)
 
 add_executable(ProbeA a.cpp)
 add_executable(ProbeB b.cpp)
-add_executable(ProbeC c.cpp)
+add_executable(ProbeC c.cpp kill_patch64.o)
 add_executable(DataHub hub.cpp force_patch64.o)
