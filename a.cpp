@@ -20,7 +20,7 @@ int main() {
         if (randomNum < 100) {
             std::cout << "Generated a number less than 100. Exiting.";
             break;
-        } else if (valid_reading(randomNum, msg.message_type)) {
+        } else if (valid_reading(randomNum, 997)) {
             
             msgsnd(qid, &msg, msg_size, 0);
             msgrcv(qid,&msg, msg_size, 2, 0);
