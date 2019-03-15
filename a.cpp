@@ -24,6 +24,7 @@ int main() {
             
             msgsnd(qid, &msg, msg_size, 0);
             msgrcv(qid,&msg, msg_size, 2, 0);
+            msg.mtype = 997;
             strncpy(msg.message, "ProbeA message", sizeof(msg.message));
         }
     }
