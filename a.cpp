@@ -29,7 +29,7 @@ int main() {
         }
     }
     
-    msg.mtype=1;													
+    	msg.mtype=1;													
 	strcpy(msg.message,"ProbeA Closed");
 	msgsnd(qid,(struct msgbuf *) &msg, size,0);
     
