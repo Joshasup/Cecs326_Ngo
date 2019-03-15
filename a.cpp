@@ -28,4 +28,10 @@ int main() {
             strncpy(msg.message, "ProbeA message", sizeof(msg.message));
         }
     }
+    
+    msg.mtype=1;													
+	strcpy(msg.message,"ProbeA Closed");
+	msgsnd(qid,(struct msgbuf *) &msg, size,0);
+    
+    return 0;
 }
