@@ -30,7 +30,14 @@ pid_t getpid() {
     }
     return i;
 }
-
+void a_route(int qid){
+    message_buffer msg{alpha};
+    if (msg.mtype == 997){
+        msg.mtype = 2;
+        strcpy(msg.message, "Recieved from ProbeA");
+		msgsnd(qid, (struct msgbuf *)&msg, size,0);
+    }
+}
 void b_route(int qid, pid_t pid) {
     // TODO: Ask professor if message count and printing is shared across probes.
     message_buffer msg{beta};
