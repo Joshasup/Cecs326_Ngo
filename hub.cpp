@@ -35,7 +35,7 @@ void a_route(int qid){
     if (msg.mtype == 997){
         msg.mtype = 2;
         strcpy(msg.message, "Recieved from ProbeA");
-		msgsnd(qid, (struct msgbuf *)&msg, size,0);
+		msgsnd(qid, &msg, size,0);
     }
 }
 void b_route(int qid, pid_t pid) {
