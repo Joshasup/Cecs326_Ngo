@@ -35,9 +35,10 @@ pid_t getpid() {
 void a_route(int qid)
 {
     message_buffer msg{alpha};
+    ssize_t status = msgrcv(qid, &msg, msg_size, msg.message_type, IPC_NOWAIT);
     while (msg.message_type != 1) // FIX THIS CONDITION
     {
-        ssize_t status = msgrcv(qid, &msg, msg_size, msg.message_type, IPC_NOWAIT);
+        status = msgrcv(qid, &msg, msg_size, msg.message_type, IPC_NOWAIT);
         if (status != -1)
         {
             std::cout << "Probe [A]: " << std::string_view{msg.message} << "\n";
