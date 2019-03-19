@@ -44,22 +44,26 @@ pid_t getpid() {
 // Code used to test route A
 void a_route(int qid) {
     message_buffer msg{shared_mtype};
+    long probe_a_mtype = 2;
 
     ssize_t status = msgrcv(qid, &msg, msg_size, 997, IPC_NOWAIT);
-    while (msg.message_type != 1) {
-        //TODO: Fix this condition
+    while (std::string_view{msg.message} != std::string_view{"TERM"}) {
+        // TODO: Fix this condition
 
         // The message was able to be read from Probe A
         if (status != -1) {
             // Send acknowledgement back to ProbeA
+            // TODO: Decode that the number is indeed from ProbeA using modulo
             std::cout << "Probe [A]: " << std::string_view{msg.message} << "\n";
-            msg.message_type = 2;
-            strncpy(msg.message, "Recieved from Probe A", sizeof(msg.message));
+            msg.message_type = probe_a_mtype;
+            strncpy(msg.message, "Received from Probe A", sizeof(msg.message));
             msgsnd(qid, &msg, msg_size, 0);
         }
         // Attempt to read the next message from Probe A
-        status = msgrcv(qid, &msg, msg_size, 997, IPC_NOWAIT);
+        msg.message_type = shared_mtype;
+        status = msgrcv(qid, &msg, msg_size, shared_mtype, IPC_NOWAIT);
     }
+    std::cout << "ProbeA has been terminated.\n";
 }
 
 // Code used to test route B

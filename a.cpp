@@ -14,24 +14,34 @@ int main() {
     int qid = msgget(ftok(".", 'u'), 0);
 
     message_buffer msg{shared_mtype};
+    long probe_a_mtype = 2;
+    bool acknowledged = true;
 
     while (true) {
-        const int randomNum = rand();
-
-        // Send a final acknowledgement to the DataHub that the program has
-        // generated a random number less than 100.
-        // TODO: OR implement a timeout system in the DataHub when ProbeA takes
-        // too long to send a message back to the DataHub
-        if (randomNum < 100) {
-            std::cout << "Generated a number less than 100. Exiting.";
-            msgsnd(qid, &msg, msg_size, 0);
-        } else if (valid_reading(randomNum, 997)) {
-
-            msgsnd(qid, &msg, msg_size, 0);
-            msgrcv(qid, &msg, msg_size, 2, 0);
-            msg.message_type = 997;
-            strncpy(msg.message, "ProbeA message", sizeof(msg.message));
+        if (acknowledged) {
+            std::cout << "Acknowledged.\n";
+            while (true) {
+                int randomNum = rand();
+                if (randomNum < 100) {
+                    std::cout << "Generated a number less than 100. Exiting.\n";
+                    strncpy(msg.message, "TERM", sizeof(msg.message));
+                    msg.message_type = shared_mtype;
+                    msgsnd(qid, &msg, msg_size, 0);
+                    exit(0);
+                } else if (valid_reading(randomNum, alpha)) {
+                    // Send message now that the random number is valid.
+                    snprintf(msg.message, sizeof(msg.message), "%i", randomNum);
+                    msg.message_type = shared_mtype;
+                    msgsnd(qid, &msg, msg_size, 0);
+                    break;
+                }
+            }
         }
+
+        // Receive acknowledgements from the DataHub using msgid 2
+        msg.message_type = probe_a_mtype;
+        auto ret = msgrcv(qid, &msg, msg_size, probe_a_mtype, IPC_NOWAIT);
+        acknowledged = !(ret == -1);
     }
 
     msg.message_type = 1;
@@ -40,3 +50,4 @@ int main() {
 
     return 0;
 }
+
