@@ -5,12 +5,10 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
-constexpr auto alpha = 997;
-
-using namespace std;
+constexpr auto magic_seed = 274471;
 
 int main() {
-    srand(random_device{}());
+    srand(std::random_device{}());
     int qid = msgget(ftok(".", 'u'), 0);
 
     message_buffer msg{shared_mtype};
@@ -28,7 +26,7 @@ int main() {
                     msg.message_type = shared_mtype;
                     msgsnd(qid, &msg, msg_size, 0);
                     exit(0);
-                } else if (valid_reading(randomNum, alpha)) {
+                } else if (valid_reading(randomNum, magic_seed)) {
                     // Send message now that the random number is valid.
                     snprintf(msg.message, sizeof(msg.message), "%i", randomNum);
                     msg.message_type = shared_mtype;
@@ -41,13 +39,7 @@ int main() {
         // Receive acknowledgements from the DataHub using msgid 2
         msg.message_type = probe_a_mtype;
         auto ret = msgrcv(qid, &msg, msg_size, probe_a_mtype, IPC_NOWAIT);
-        acknowledged = !(ret == -1);
+        acknowledged = ret != -1;
     }
-
-    msg.message_type = 1;
-    strcpy(msg.message, "ProbeA Closed");
-    msgsnd(qid, &msg, msg_size, 0);
-
-    return 0;
 }
 

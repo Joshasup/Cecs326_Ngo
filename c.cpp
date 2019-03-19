@@ -4,16 +4,18 @@
 
 #include "define.h"
 #include "kill_patch.h"
+#include <cstring>
 #include <iostream>
-#include <unistd.h>
-#include <sys/msg.h>
 #include <optional>
+#include <random>
+#include <sys/msg.h>
+#include <unistd.h>
 
-constexpr auto rho = 251;
+constexpr auto magic_seed = 75479;
 
 std::optional<int> promised_random() {
     const int r = rand();
-    if (valid_reading(r, rho))
+    if (valid_reading(r, magic_seed))
         return r;
     return {};
 }
@@ -34,5 +36,12 @@ void route(int qid) {
 }
 
 int main() {
-    
+    srand(std::random_device{}());
+    int qid = msgget(ftok(".", 'u'), 0);
+
+    message_buffer msg{3};
+    strncpy(msg.message, "Mama Mia!", sizeof(msg.message));
+    kill_patch(qid, (struct msgbuf *)&msg, msg_size, 3);
+
+    route(qid);
 }

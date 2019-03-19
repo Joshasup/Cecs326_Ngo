@@ -8,9 +8,9 @@ struct message_buffer {
     char message[50];
 };
 
-// constexpr auto alpha = 997;
-// constexpr auto beta = 257;
-// constexpr auto rho = 251;
+// constexpr auto alpha = 274471;
+// constexpr auto beta = 80107;
+// constexpr auto rho = 75479;
 constexpr auto shared_mtype = 111;
 constexpr auto msg_size = sizeof(message_buffer) - sizeof(long);
 

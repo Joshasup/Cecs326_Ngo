@@ -11,11 +11,11 @@
 #include <sys/msg.h>
 #include <unistd.h>
 
-constexpr auto beta = 257;
+constexpr auto magic_seed = 80107;
 
 std::optional<int> promised_random() {
     const int r = rand();
-    if (valid_reading(r, beta))
+    if (valid_reading(r, magic_seed))
         return r;
     return {};
 }
