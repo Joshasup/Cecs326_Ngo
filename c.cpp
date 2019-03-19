@@ -8,8 +8,6 @@
 #include <cstdlib>
 #include <random>
 
-#include "kill_patch.h"
-
 //generate random value
 //if rand val is divisible by magic seed -> message sent to the hub
 //does not receive any acknowledgment from the hub
@@ -26,7 +24,7 @@ int main() {
     buf msg;
     int size = sizeof(msg) - sizeof(long);
     msg.mtype = 257; //magic seed
-    kill_patch(qid, &msg, size, 251);
+    //kill_patch(qid, &msg, size, 251);
 
     while(true){
         int randNum = rand();
@@ -34,7 +32,7 @@ int main() {
 
         if (randNum == 0){
             msg.mtype = 251;
-            strncopy(msg.message, "ProbeC");
+            //strncopy(msg.message, "ProbeC");
             msgsnd(qid, (struct msgbuf *)&msg, size, 0);
         }
     }

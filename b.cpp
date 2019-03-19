@@ -32,6 +32,9 @@ void route(int qid) {
 }
 
 int main() {
+    std::cout<<"hi";
+    int randomNum = rand();
+    std::cout << randomNum;
     srand(std::random_device{}());
     int qid = msgget(ftok(".", 'u'), 0);
     route(qid);
