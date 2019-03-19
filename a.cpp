@@ -16,11 +16,15 @@ int main() {
     message_buffer msg{shared_mtype};
 
     while (true) {
-        // TODO: Receive acknowledgement from DataHub
         const int randomNum = rand();
+
+        // Send a final acknowledgement to the DataHub that the program has
+        // generated a random number less than 100.
+        // TODO: OR implement a timeout system in the DataHub when ProbeA takes
+        // too long to send a message back to the DataHub
         if (randomNum < 100) {
             std::cout << "Generated a number less than 100. Exiting.";
-            break;
+            msgsnd(qid, &msg, msg_size, 0);
         } else if (valid_reading(randomNum, 997)) {
 
             msgsnd(qid, &msg, msg_size, 0);

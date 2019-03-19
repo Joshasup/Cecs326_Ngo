@@ -45,9 +45,21 @@ pid_t getpid() {
 void a_route(int qid) {
     message_buffer msg{shared_mtype};
 
-    msg.message_type = 2;
-    strncpy(msg.message, "Recieved from ProbeA", sizeof(msg.message));
-    msgsnd(qid, (struct msgbuf *)&msg, msg_size, 0);
+    ssize_t status = msgrcv(qid, &msg, msg_size, 997, IPC_NOWAIT);
+    while (msg.message_type != 1) {
+        //TODO: Fix this condition
+
+        // The message was able to be read from Probe A
+        if (status != -1) {
+            // Send acknowledgement back to ProbeA
+            std::cout << "Probe [A]: " << std::string_view{msg.message} << "\n";
+            msg.message_type = 2;
+            strncpy(msg.message, "Recieved from Probe A", sizeof(msg.message));
+            msgsnd(qid, &msg, msg_size, 0);
+        }
+        // Attempt to read the next message from Probe A
+        status = msgrcv(qid, &msg, msg_size, 997, IPC_NOWAIT);
+    }
 }
 
 // Code used to test route B
