@@ -16,6 +16,9 @@ std::pair<int, bool> promised_random() {
 bool get_acknowledgement(int qid, message_buffer &m) {
     m.message_type = 2;
     const auto ret = msgrcv(qid, &m, msg_size, 2, IPC_NOWAIT);
+    if (ret != -1) {
+        printf("Acknowledged.\n");
+    }
     return ret != -1;
 }
 
@@ -44,7 +47,7 @@ void route(int qid) {
                     strncpy(msg.message, "TERM", sizeof(msg.message));
                     msg.message_type = 2;
                     msgsnd(qid, &msg, msg_size, 0);
-                    return;
+                    exit(0);
                 }
                 random = promised_random();
                 continue;
@@ -56,7 +59,7 @@ void route(int qid) {
             strncpy(msg.message, "TERM", sizeof(msg.message));
             msg.message_type = shared_mtype;
             msgsnd(qid, &msg, msg_size, 0);
-            return;
+            exit(0);
         }
         random = promised_random();
         acknowledged = get_acknowledgement(qid, msg);

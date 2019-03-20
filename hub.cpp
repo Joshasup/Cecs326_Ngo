@@ -131,8 +131,9 @@ bool a_end(int qid, message_buffer &m) {
     if (ret && std::string_view{m.message} == "TERM") {
         std::cout << "Last ProbeA message: " << std::string_view{m.message}
                   << std::endl;
+        return ret;
     }
-    return ret;
+    return !ret;
 }
 
 bool c_end(int qid, message_buffer &m) {
