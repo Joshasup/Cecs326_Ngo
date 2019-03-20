@@ -23,20 +23,28 @@ std::optional<int> promised_random() {
 void route(int qid) {
     message_buffer msg{shared_mtype};
 
-    std::cout << "Broadcasting from " << getpid() << '\n';
-
     // Copy the formatted int into the message queue
     while (true) {
         const auto random = promised_random();
         if (random) {
             snprintf(msg.message, sizeof(msg.message), "%i", random.value());
+            printf("Sending %s\n", msg.message);
             msgsnd(qid, &msg, msg_size, 0);
         }
     }
 }
 
 int main() {
+    std::cout << "Broadcasting from " << getpid() << '\n';
+
     srand(std::random_device{}());
-    int qid = msgget(ftok(".", 'u'), 0);
+
+    // Wait until the queue has started.
+    int qid = -1;
+    do {
+        qid = msgget(ftok(".", 'u'), 0);
+    } while (qid == -1);
+    printf("Queue %i found\n", qid);
+
     route(qid);
 }

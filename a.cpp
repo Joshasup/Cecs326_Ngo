@@ -1,45 +1,77 @@
 #include "define.h"
 #include <cstring>
 #include <iostream>
+#include <optional>
 #include <random>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
 constexpr auto magic_seed = 274471;
 
-int main() {
-    srand(std::random_device{}());
-    int qid = msgget(ftok(".", 'u'), 0);
+std::pair<int, bool> promised_random() {
+    const int r = rand();
+    return {r, (valid_reading(r, magic_seed))};
+}
 
+bool get_acknowledgement(int qid, message_buffer &m) {
+    m.message_type = 2;
+    const auto ret = msgrcv(qid, &m, msg_size, 2, IPC_NOWAIT);
+    return ret != -1;
+}
+
+void route(int qid) {
     message_buffer msg{shared_mtype};
-    long probe_a_mtype = 2;
     bool acknowledged = true;
+    auto random = promised_random();
 
     while (true) {
-        if (acknowledged) {
-            std::cout << "Acknowledged.\n";
-            while (true) {
-                int randomNum = rand();
-                if (randomNum < 100) {
-                    std::cout << "Generated a number less than 100. Exiting.\n";
+        if (random.second || acknowledged) {
+            if (random.second && acknowledged) {
+                // Send message
+                msg.message_type = shared_mtype;
+                snprintf(msg.message, sizeof(msg.message), "%i", random.first);
+                printf("Sending %s\n", msg.message);
+                msgsnd(qid, &msg, msg_size, 0);
+            } else if (random.second) {
+                // We have the random number but no acknowledgement
+                acknowledged = get_acknowledgement(qid, msg);
+                continue;
+            } else {
+                // We have the acknowledgement but not the right random number
+                if (random.first < 100) {
+                    // Send kill message
+                    printf("Generated a number less than 100. Exiting.\n");
                     strncpy(msg.message, "TERM", sizeof(msg.message));
-                    msg.message_type = shared_mtype;
+                    msg.message_type = 2;
                     msgsnd(qid, &msg, msg_size, 0);
-                    exit(0);
-                } else if (valid_reading(randomNum, magic_seed)) {
-                    // Send message now that the random number is valid.
-                    snprintf(msg.message, sizeof(msg.message), "%i", randomNum);
-                    msg.message_type = shared_mtype;
-                    msgsnd(qid, &msg, msg_size, 0);
-                    break;
+                    return;
                 }
+                random = promised_random();
+                continue;
             }
         }
-
-        // Receive acknowledgements from the DataHub using msgid 2
-        msg.message_type = probe_a_mtype;
-        auto ret = msgrcv(qid, &msg, msg_size, probe_a_mtype, IPC_NOWAIT);
-        acknowledged = ret != -1;
+        if (random.first < 100) {
+            // Send kill message
+            printf("Generated a number less than 100. Exiting.\n");
+            strncpy(msg.message, "TERM", sizeof(msg.message));
+            msg.message_type = shared_mtype;
+            msgsnd(qid, &msg, msg_size, 0);
+            return;
+        }
+        random = promised_random();
+        acknowledged = get_acknowledgement(qid, msg);
     }
 }
 
+int main() {
+    srand(std::random_device{}());
+
+    // Wait until the queue has started.
+    int qid = -1;
+    do {
+        qid = msgget(ftok(".", 'u'), 0);
+    } while (qid == -1);
+    printf("Queue %i found\n", qid);
+
+    route(qid);
+}

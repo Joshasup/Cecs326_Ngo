@@ -5,7 +5,7 @@
 
 struct message_buffer {
     long message_type;
-    char message[50];
+    char message[20];
 };
 
 // constexpr auto alpha = 274471;
@@ -16,5 +16,5 @@ constexpr auto msg_size = sizeof(message_buffer) - sizeof(long);
 
 template <typename T1, typename T2>
 bool valid_reading(T1 random_number, T2 magic_number) {
-    return random_number % magic_number == 0;
+    return random_number != 0 && random_number % magic_number == 0;
 }

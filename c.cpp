@@ -5,11 +5,8 @@
 #include "define.h"
 #include "kill_patch.h"
 #include <cstring>
-#include <iostream>
 #include <optional>
 #include <random>
-#include <sys/msg.h>
-#include <unistd.h>
 
 constexpr auto magic_seed = 75479;
 
@@ -23,25 +20,33 @@ std::optional<int> promised_random() {
 void route(int qid) {
     message_buffer msg{shared_mtype};
 
-    std::cout << "Broadcasting from " << getpid() << '\n';
-
     // Copy the formatted int into the message queue
     while (true) {
         const auto random = promised_random();
         if (random) {
             snprintf(msg.message, sizeof(msg.message), "%i", random.value());
+            printf("Sending %s\n", msg.message);
             msgsnd(qid, &msg, msg_size, 0);
         }
     }
 }
 
 int main() {
-    srand(std::random_device{}());
-    int qid = msgget(ftok(".", 'u'), 0);
+    printf("Broadcasting from %i\n", getpid());
 
+    srand(std::random_device{}());
+
+    // Wait until the queue has started.
+    int qid = -1;
+    do {
+        qid = msgget(ftok(".", 'u'), 0);
+    } while (qid == -1);
+    printf("Queue %i found\n", qid);
+
+    // Send kill acknowledgement to DataHub using msgid 3
     message_buffer msg{3};
     strncpy(msg.message, "Mama Mia!", sizeof(msg.message));
-    kill_patch(qid, (struct msgbuf *)&msg, msg_size, 3);
+    kill_patch(qid, (struct msgbuf *)&msg, msg_size, msg.message_type);
 
     route(qid);
 }
