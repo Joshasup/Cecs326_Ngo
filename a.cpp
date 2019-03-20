@@ -5,6 +5,7 @@
 #include <random>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <unistd.h>
 
 constexpr auto magic_seed = 274471;
 
@@ -32,7 +33,7 @@ void route(int qid) {
             if (random.second && acknowledged) {
                 // Send message
                 msg.message_type = shared_mtype;
-                snprintf(msg.message, sizeof(msg.message), "%i", random.first);
+                snprintf(msg.message, sizeof(msg.message), "%i:%i", getpid(), random.first);
                 printf("Sending %s\n", msg.message);
                 msgsnd(qid, &msg, msg_size, 0);
             } else if (random.second) {
@@ -45,7 +46,7 @@ void route(int qid) {
                     // Send kill message
                     printf("Generated a number less than 100. Exiting.\n");
                     strncpy(msg.message, "TERM", sizeof(msg.message));
-                    msg.message_type = 2;
+                    msg.message_type = 4;
                     msgsnd(qid, &msg, msg_size, 0);
                     exit(0);
                 }
@@ -57,7 +58,7 @@ void route(int qid) {
             // Send kill message
             printf("Generated a number less than 100. Exiting.\n");
             strncpy(msg.message, "TERM", sizeof(msg.message));
-            msg.message_type = shared_mtype;
+            msg.message_type = 4;
             msgsnd(qid, &msg, msg_size, 0);
             exit(0);
         }

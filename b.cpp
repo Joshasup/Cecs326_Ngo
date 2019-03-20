@@ -27,8 +27,8 @@ void route(int qid) {
     while (true) {
         const auto random = promised_random();
         if (random) {
-            snprintf(msg.message, sizeof(msg.message), "%i", random.value());
-            printf("Sending %s\n", msg.message);
+            snprintf(msg.message, sizeof(msg.message), "%i:%i", getpid(),
+                     random.value());
             msgsnd(qid, &msg, msg_size, 0);
         }
     }

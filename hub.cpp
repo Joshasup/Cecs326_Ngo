@@ -109,31 +109,42 @@ void c_route(int qid) {
               << std::endl;
 }
 
-bool from_a(message_buffer &m) {
-    auto i = std::atoi(m.message);
-    return valid_reading(i, 274471);
-}
+enum pids { A, B, C, D };
 
-bool from_b(message_buffer &m) {
-    auto i = std::atoi(m.message);
-    return valid_reading(i, 80107);
-}
+// Split string into two
+auto parse_message(message_buffer &m, int &a_pid, int &b_pid, int &c_pid) {
+    std::string a{m.message};
+    auto pivot = a.find_first_of(':');
+    std::string pid(a.begin(), a.begin() + pivot);
+    std::string num(a.begin() + pivot + 1, a.end());
 
-bool from_c(message_buffer &m) {
-    auto i = std::atoi(m.message);
-    return valid_reading(i, 75479);
+    auto i = std::atoi(num.c_str());
+    if (valid_reading(i, 274471)) {
+        a_pid = std::atoi(pid.c_str());
+        return pids::A;
+    } else if (valid_reading(i, 80107)) {
+        b_pid = std::atoi(pid.c_str());
+        return pids::B;
+    } else if (valid_reading(i, 75479)) {
+        c_pid = std::atoi(pid.c_str());
+        return pids::C;
+    }
 }
 
 bool a_end(int qid, message_buffer &m) {
     ssize_t kill_status = msgrcv(qid, &m, msg_size, m.message_type, IPC_NOWAIT);
     // Kill message received when A sends final message
-    bool ret = kill_status != -1;
-    if (ret && std::string_view{m.message} == "TERM") {
-        std::cout << "Last ProbeA message: " << std::string_view{m.message}
-                  << std::endl;
-        return ret;
+    // Message received
+    if (kill_status != -1) {
+        // Message is valid
+        if (std::string_view{m.message} == "TERM") {
+            std::cout << "Last ProbeA message: " << std::string_view{m.message}
+                      << std::endl;
+            return true;
+        }
+        return false;
     }
-    return !ret;
+    return false;
 }
 
 bool c_end(int qid, message_buffer &m) {
@@ -147,13 +158,14 @@ bool c_end(int qid, message_buffer &m) {
     return ret;
 }
 
-void general_route(queue &q, pid_t pid) {
+void general_route(queue &q) {
     // General setup
     message_buffer shared_msg{shared_mtype};
     int qid = q.qid;
     // A setup
-    message_buffer a_msg{2};
-    strncpy(a_msg.message, "Acknowledged.", sizeof(a_msg.message));
+    message_buffer a_snd{2};
+    message_buffer a_rcv{4};
+    strncpy(a_snd.message, "Acknowledged.", sizeof(a_snd.message));
     bool a_dead = false;
     // B setup
     int message_count = 0;
@@ -166,26 +178,30 @@ void general_route(queue &q, pid_t pid) {
         // Receive a message
         ssize_t status = msgrcv(qid, &shared_msg, msg_size,
                                 shared_msg.message_type, IPC_NOWAIT);
+        pid_t a_pid;
+        pid_t b_pid;
+        pid_t c_pid;
 
         // Message received
         if (status != -1 && std::string_view{shared_msg.message} != "") {
             printf("Message: %s\n", shared_msg.message);
 
-            if (from_a(shared_msg)) {
-                // Send acknowledgement back
-                msgsnd(qid, &a_msg, msg_size, 0);
+            auto from = parse_message(shared_msg, a_pid, b_pid, c_pid);
+            // Send acknowledgement back
+            if (from == pids::A) {
+                msgsnd(qid, &a_snd, msg_size, 0);
             }
             ++message_count;
         }
         // A termination
-        if (!a_dead && a_end(qid, a_msg)) {
+        if (!a_dead && a_end(qid, a_rcv)) {
             printf("ProbeA generated a value less than 100.\n");
             a_dead = true;
         }
         // B termination
         if (!b_dead && message_count == 10000) {
             printf("Limit reached, killing ProbeB.\n");
-            force_patch(pid);
+            force_patch(b_pid);
             b_dead = true;
         }
         // C termination
@@ -198,18 +214,11 @@ void general_route(queue &q, pid_t pid) {
 }
 
 int main() {
-    std::cout << "Make sure to initialize the other probes now before entering "
-                 "anything in.\n";
-
-    // Get pid so that the program can force quit Probe B
-    std::cout << "Enter the PID of Probe B: ";
-    pid_t pid = getpid();
-
     // Create message queue shared by all 3 hubs
     queue q{};
 
     // a_route(q.qid);
     // b_route(q.qid, pid);
     // c_route(q.qid);
-    general_route(q, pid);
+    general_route(q);
 }
