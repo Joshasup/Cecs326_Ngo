@@ -8,8 +8,7 @@
 
 using namespace std;
 
-//declare methods
-string replaceWord(string word, string replacement, string target);
+string replaceWord(string text, string replacement, string target);
 
 int main() {
 
@@ -24,14 +23,14 @@ int main() {
 	{
 		replacedCount = 0;
 
-		cout << "Enter the replacement word" << endl;
+		cout << "Enter replacement word" << endl;
 		getline(cin, replacement);
 
 		if (replacement.compare("!wq") == 0) {
 			break;
 		}
 
-		cout << "Enter the word you want to replace" << endl;
+		cout << "Enter target word" << endl;
 		getline(cin, target);
 
 		if (target.compare("!wq") == 0) {
@@ -70,19 +69,21 @@ int main() {
 }
 
 
-//replaces a single instance of the target string with replacement
 string replaceWord(string text, string replacement, string target) {
-	int beginIndex = 0;
-	int endIndex = 0;
-	string textLeftEnd;
-	string textRightEnd;
+	int beginning = 0;
+	int ending = 0;
+	string left;
+	string right;
 
-	beginIndex = text.find(target);
-	endIndex = beginIndex + target.length() - 1;
-	textLeftEnd = text.substr(0, beginIndex);
-	textRightEnd = text.substr(endIndex + 1);
-	text = textLeftEnd + replacement + textRightEnd;
+	//find the target
+	beginning = text.find(target);
+	//split the text into 3 different strings
+	// left - the left of the target, the target, and the right part of the target
+	ending = beginning + target.length() - 1;
+	left = text.substr(0, beginning);
+	right = text.substr(ending + 1);
+	//remove target string, add left, replacement, and right to form a new text
+	text = left + replacement + right;
 
 	return text;
-
 }
