@@ -1,0 +1,88 @@
+#include <cstdio>
+#include <cstring>
+#include <algorithm>
+#include <cstdlib>
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h> 
+
+using namespace std;
+
+//declare methods
+string replaceWord(string word, string replacement, string target);
+
+int main() {
+
+	int pid = 0;
+
+	string text = "Lelouch is a highly intelligent individual who is also calm, sophisticated, and arrogant due to his aristocratic upbringing. While at school, Lelouch conducts himself as a sociable, likeable, and often easygoing student. However, this is really a mask to hide his true nature. While as Zero his true nature is expressed. His charisma and beliefs in justice gain him the trust and respect of many soldiers and leaders. Lelouch is known for having a very stoic personality.He never cared about schoolwork, seeing the entire thing as trivial, even though his high intelligence would make it easy for him.At one point, Shirley stated that if Lelouch applied himself in school, he could get high grades.He enjoys seeking out challenges, often playing chess against the nobility.In general, Lelouch takes most day - to - day affairs with open disinterest, often not even noticing the affection of others, especially Shirley, his fellow classmate.He has a strong dislike for nobles, viewing them as tepid and overprivileged parasites. In battle, Lelouch is very cold and tactical.He is willing to sacrifice civilians and soldiers alike, if that is what it takes to achieve the objective.In the battle at Narita, when he created a landslide that wiped out most of the enemy forces, and indirectly, several civilians in the town below, he brushed off the civilian casualties as a simple mathematical overestimation. He did have second thoughts when he learned that one of them was Shirley's father, but he accepted that there will always be consequences for all of his actions. He also saw no problem with collapsing a large portion of Tokyo, resulting in countless military and civilian casualties.";
+
+	int replacedCount;
+	string replacement;
+	string target;
+	while (pid > 0)
+	{
+		replacedCount = 0;
+
+		cout << "Enter the replacement word" << endl;
+		getline(cin, replacement);
+
+		if (replacement.compare("!wq") == 0) {
+			break;
+		}
+
+		cout << "Enter the word you want to replace" << endl;
+		getline(cin, target);
+
+		if (target.compare("!wq") == 0) {
+			break;
+		}
+
+		pid = fork();
+
+		if (pid == 0) {
+			replacedCount = 0;
+			while (text.find(target) != -1 || replacedCount == 0) {
+
+				if (text.find(target) != -1) {
+					text = replaceWord(text, replacement, target);
+					replacedCount++;
+				}
+
+				//bug keep on repeating pid with .
+				if (text.find(target) == -1 && replacedCount == 0) {
+					cout << getpid() << " . " << endl;
+				}
+			}
+
+			cout << text << endl;
+			cout << replacedCount << " words were replaced. " << endl;
+		}
+
+		else if (pid > 0) {
+			int status;
+			wait(&status);
+		}
+
+	}
+
+	exit(0);
+}
+
+
+//replaces a single instance of the target string with replacement
+string replaceWord(string text, string replacement, string target) {
+	int beginIndex = 0;
+	int endIndex = 0;
+	string textLeftEnd;
+	string textRightEnd;
+
+	beginIndex = text.find(target);
+	endIndex = beginIndex + target.length() - 1;
+	textLeftEnd = text.substr(0, beginIndex);
+	textRightEnd = text.substr(endIndex + 1);
+	text = textLeftEnd + replacement + textRightEnd;
+
+	return text;
+
+}
